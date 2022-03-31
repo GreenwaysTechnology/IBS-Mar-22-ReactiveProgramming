@@ -1,0 +1,947 @@
+
+				Reactive Programming
+..............................................................................................
+
+Reactive Programming using Project Reactor - 3
+Reacting Programming implementation using Spring Boot - 3 
+
+What is Reactive Programming?
+
+Why Reactive Programming ?
+
+Implemenations?
+
+
+What is Reactive Programming?
+  Reactive Programming is one the Programming style to build "distributed applications",User interface applications,Mobile Applications.
+
+Distributed(MicroService) application characteristics:
+
+Since Distributed , the apps are scaled across machines and processes
+
+1.Responsive:
+   The system responds in a timely manner if at all possible responsiveness is the cornerstone of usability and utility.
+
+2.Resilient
+   The system should stay responsive in the face of failure. we need to manage failures in the    postive way.
+
+3.Elastic
+    The system should stay responsive under varying work load. Reactive Systems can react to the changes in the input rate by increasing or decreasing
+
+4.Message Driven:
+    Reactive Systems rely on async message passing to establish a boundary between components to ensure loose coupling,location transparance,isolation
+
+if any system is built based on these principles called "Reactive Systems".
+............................................................................................
+				Reactive Programming
+
+Reactive Programming is not a language,lib,Framework rather  it is set of standards and principles.
+Reactive Programming principles can be used on any language/lib/framework which is called 
+"Reactive-X"  - Reactive Extension.
+.............................................................................................
+History of Rx Programming:
+.........................
+At Microsoft Erik Meijer who created Reactive Programming ideas from "C#".
+
+Core Ideas behind Reactive Programming :
+
+Object:
+  -setters - write
+  -getters - read
+
+getters
+   -single value - scallar values -number,strings,booleans,object
+   -iteralble value(many values) - array , collection-list,map,set
+
+
+Iterations:
+ IEnumerable ,IEnumerator 
+
+IEnumerator 
+   - bridge interface which is used to iterate collection
+
+  Producer                             Consumer/subscriber Caller(requester)
+  moveNext():boolean -------------------->  give me a value /error
+
+Based this we define programming model called "Pull based"
+
+PULL Based Programming:
+......................
+
+List list =....
+
+Iterator it=list.iterator()
+while(it.hasNext()) {
+   //pull data
+ T data= it.next()
+}
+
+PULL Based Data Retrival
+
+T data      - it.next() - Data 
+T error     - throws Exception -  error
+boolean done - !it.next()
+
+Why PULL based programming not good?
+
+
+ consumer pulls value from producer.
+ consumer has control over producer.
+ consumer only decide when he wants item.
+
+             "Values are produced on demand by consumer"
+
+Before a decade, programming model started like "Cloud based, async programming Programming" and distributed programming model - microservices.
+
+MicroServices:
+
+Program to Program interaction
+Object(Caller) to Object(Callee) interaction
+
+Pull Based Programming makes 
+
+  -service tight coupling
+  -blocking
+  -failures
+  
+............................................................................................
+.............................................................................................
+History of Rx Programming:
+.........................
+At Microsoft Erik Meijer who created Reactive Programming ideas from "C#".
+
+Core Ideas behind Reactive Programming :
+
+Object:
+  -setters - write
+  -getters - read
+
+getters
+   -single value - scallar values -number,strings,booleans,object
+   -iteralble value(many values) - array , collection-list,map,set
+
+
+Iterations:
+ IEnumerable ,IEnumerator 
+
+IEnumerator 
+   - bridge interface which is used to iterate collection
+
+  Producer                             Consumer/subscriber Caller(requester)
+  moveNext():boolean -------------------->  give me a value /error
+
+Based this we define programming model called "Pull based"
+
+PULL Based Programming:
+......................
+
+List list =....
+
+Iterator it=list.iterator()
+while(it.hasNext()) {
+   //pull data
+ T data= it.next()
+}
+
+PULL Based Data Retrival
+
+T data      - it.next() - Data 
+T error     - throws Exception -  error
+boolean done - !it.next()
+
+Why PULL based programming not good?
+
+
+ consumer pulls value from producer.
+ consumer has control over producer.
+ consumer only decide when he wants item.
+
+             "Values are produced on demand by consumer"
+
+Before a decade, programming model started like "Cloud based, async programming Programming" and distributed programming model - microservices.
+
+MicroServices:
+
+Program to Program interaction
+Object(Caller) to Object(Callee) interaction
+
+Pull Based Programming makes 
+
+  -service tight coupling
+  -blocking
+  -failures
+  
+............................................................................................
+
+PUSH Based Programming:
+.......................
+
+-Producer is sending data to COnsumer via events
+-Producer notifies the consumer when ever data,error,complete events are given
+-Push based programming is implemented based on "Observable Design Pattern"
+-Observable Design pattern is foundatation pattern for "Event Driven Programming"
+
+PUSH = {observable + Events Driven}
+............................................................................................
+
+As of now , we have seen how to stream Data based on events.
+.............................................................................................
+
+Patterns and its Roles in Reactive Programming:
+
+1.Observer Design Pattern
+    Help to design event driven programming
+ 
+2.Iterator 
+   Used to read data in sequence
+
+3.functional Programming principles
+    To enable More declarative programming
+  declarative means instead of telling how to do, we say what to do
+     -Higher order function
+   To enable data safety
+      -Immutablity.
+.............................................................................................
+				 Reactive Programming standards
+
+
+in order to build reactive programming, the reactive programming standards.
+
+1.reactivex.io 
+    Explains building blocks of reactive programming
+
+2.https://www.reactivemanifesto.org/
+    common standards for reactive systems
+
+3.Reactive Stream spec
+   https://www.reactive-streams.org/
+  It is only built for java technology
+
+if any apps or frameworks or libs built based on reactive programming in java, must follow this spec.
+..............................................................................................
+How to start Reactive Programming?
+
+ Reactive Programming can be implemented in any language.
+
+implementations:
+Java: RxJava
+JavaScript: RxJS
+C#: Rx.NET
+C#(Unity): UniRx
+Scala: RxScala
+Clojure: RxClojure
+
+JVM implementation:
+
+1.RxJava
+2.Project Reactor
+3.Mutiny
+...............................................................................................				  Project Reactor 
+
+..............................................................................................
+
+Project Setup:
+
+1.Maven project.
+	
+ <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-bom</artifactId>
+                <version>2020.0.17</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+.............................................................................................
+
+Reactive Stream Spec apis:
+
+
+
+1.Publisher<T>	
+    A Publisher is a provider of a potentially unbounded number of sequenced elements, publishing them according to the demand received from its Subscriber(s).
+
+2. Subscriber<T>	
+     Will receive call to Subscriber.onSubscribe(Subscription) once after passing an instance of Subscriber to Publisher.subscribe(Subscriber).
+
+3.Subscription	
+   A Subscription represents a one-to-one lifecycle of a Subscriber subscribing to a Publisher.
+
+4. Processor<T,​R>	
+A Processor represents a processing stage—which is both a Subscriber and a Publisher and obeys the contracts of both.
+   Processor is acting as both publisher and Consumer - dual role
+
+org.reactivestreams  - package.
+
+..............................................................................................
+
+Project Reactor Implementation of Reactive Stream spec apis.
+
+reactor.core.publisher
+
+1.Mono :
+    
+   interface CorePublisher extends Publisher {}
+   class Mono implements CorePublisher {}
+   
+Publisher/Provider which emits/publish 0 to 1 event/items
+
+There are three events
+
+1.success - data event emit will be emitted
+2.error  -  error event to be  emitted
+3.complete -  complete event to be emitted: no more data.
+
+
+2.Flux 
+    interface CorePublisher extends Publisher {}
+   class Flux implements CorePublisher {}
+	
+Emits sequence of 0-N items
+............................................................................................
+
+How to create very simple Reactive Implementation?
+
+package com.ibs.reactive;
+
+import reactor.core.publisher.Mono;
+
+public class FirstPublisher {
+    public static void main(String[] args) {
+       Mono publisher= Mono.create(observer->{
+           //sending event - push data onto stream
+            observer.success("Hello");
+        });
+       //listen
+        publisher.subscribe(onData->{
+            System.out.println(onData);
+        },onError->{
+            System.out.println(onError);
+        },()->{
+            System.out.println("Completed");
+        });
+
+    }
+}
+
+Reactive Operators:
+  methods are called as "operators".
+
+Operators:
+ -> methods other wise called functions.
+ eg . create
+ ->every operator is pure function and it returns immutable object
+
+pure function :
+ it is one of functional programming principle.
+
+Rule 1:
+
+if any function receives input, it should not modify the input,it should return the same
+
+pure function
+  function update(a){
+     return a
+  }
+
+ update(10);
+
+impure function: 
+  function update(a){
+     var b=10
+     return a * b;
+  }
+
+ update(10);
+if any performs computation against inputs, which is called "side effects".
+
+pure function should not do any side effect
+
+Rule 1:
+  What if the function receives input, need to mutate,how to write pure function
+
+
+impure function:
+
+    function updateProfile(profile,city){ 
+
+         profile.city = city
+	 return profile;        
+    }
+
+    updateProfile(new Profile(1,"foo","coimbatore"),"chennai")
+  
+..............................................................................................
+
+
+Create Publisher ,Publishes events, Subscribe,listens for Data:
+
+1.Mono With Success
+
+Api: 
+   reactor.core.publisher
+Interface MonoSink<T>
+
+Used to emit nothing(0), a single value , or error.
+
+package com.ibs.reactive;
+
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import reactor.core.publisher.Mono;
+
+public class MonoSuccess {
+    public static void main(String[] args) {
+//        Mono<String> mono = Mono.create(monoSink->{
+//            monoSink.success("Success");
+//        });
+//        mono.subscribe(data->{
+//            System.out.println(data);
+//        },error->{},()->{
+//            System.out.println("complete");
+//        });
+        Mono.create(monoSink->{
+            monoSink.success("Success");
+        }).subscribe(data->{
+            System.out.println(data);
+        },error->{},()->{
+            System.out.println("complete");
+        });
+
+    }
+}
+
+
+
+
+1.Mono with Failure
+
+public class MonoError {
+    public static void main(String[] args) {
+        Mono.create(monoSink -> {
+            monoSink.error(new RuntimeException("oops!"));
+        }).subscribe(data -> {
+            System.out.println(data);
+        }, err -> {
+            System.out.println(err);
+        }, () -> {
+            System.out.println("Complete");
+        });
+    }
+}
+
+
+2.Mono with 0 
+package com.ibs.reactive;
+
+import reactor.core.publisher.Mono;
+
+public class MonoWithSucess {
+    public static void main(String[] args) {
+        Mono.create(monoSink -> {
+            monoSink.success();
+        }).subscribe(data -> {
+            System.out.println("No data" + data);
+        }, err -> {
+            System.out.println(err);
+        }, () -> {
+            System.out.println("Complete");
+        });
+    }
+}
+
+Mono with Either success or failure - with biz logic
+
+package com.ibs.reactive.mono;
+
+import reactor.core.publisher.Mono;
+
+public class MonoWithBizLogic {
+    public static void main(String[] args) {
+        login("admin", "admin")
+                .subscribe(System.out::println,
+                        System.out::println,
+                        () -> System.out.println("Login Stream closed"));
+    }
+
+    private static Mono<String> login(String userName, String password) {
+        //biz logic
+        if (userName.equals("admin") && password.equals("admin")) {
+            return Mono.create(monoSink -> {
+                monoSink.success("Login success");
+            });
+        }
+        return Mono.create(monoSink -> {
+            monoSink.error(new RuntimeException("Login failed"));
+        });
+    }
+}
+..............................................................................................
+			 Data Sources and Mono
+
+There are creation operators which abstracts away of sending data without using explicit way of sending data using create opeator.
+
+package com.ibs.reactive.mono;
+
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+
+public class MonoCreationalOperators {
+    public static void main(String[] args) {
+        getSingleValue();
+        getList();
+        getError();
+        getNothing();
+        login("admin", "admin").subscribe(System.out::println,
+                System.out::println,
+                () -> System.out.println("Stream closed"));
+    }
+
+    private static void getNothing() {
+        Mono.empty().subscribe(System.out::println,
+                System.out::println,
+                () -> System.out.println("Stream closed"));
+    }
+
+    private static void getError() {
+        Mono.error(new RuntimeException("Item Not Found")).subscribe(System.out::println,
+                System.out::println,
+                () -> System.out.println("Stream closed"));
+    }
+
+    private static void getSingleValue() {
+        int number = 100;
+        Mono.just(number).subscribe(System.out::println,
+                System.out::println,
+                () -> System.out.println("Stream closed"));
+    }
+
+    private static Mono<String> login(String userName, String password) {
+        //biz logic
+        if (userName.equals("admin") && password.equals("admin")) {
+            return Mono.just("Login Success");
+        }
+        return Mono.error(new RuntimeException("Login Failed"));
+    }
+
+    private static void getList() {
+        Mono.just(List.of(1, 2, 3, 5, 8)).subscribe(System.out::println,
+                System.out::println,
+                () -> System.out.println("Stream closed"));
+    }
+
+}
+.............................................................................................
+					Lazy
+............................................................................................
+
+Reactive Programming is based on lazy, on demand only data will be emitted.
+
+Dont emit until you subscribe .
+
+Nothing happens Until you subscribe.
+
+Data does not start pumping into stream by default,It creates async pattern.
+
+package com.ibs.reactive.mono;
+
+import reactor.core.publisher.Mono;
+
+public class Lazy {
+    public static void main(String[] args) {
+        String res = getValueEager();
+        System.out.println(res);
+        Mono<String> response = getValueLazy();
+//        System.out.println(response);
+        //values to be emitted after subscription
+        try {
+            Thread.sleep(10000);
+            System.out.println("After delay");
+            response.subscribe(System.out::println);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static Mono<String> getValueLazy() {
+        return Mono.just("Hello Lazy!");
+    }
+
+    private static String getValueEager() {
+        return "Hello Eager";
+    }
+}
+.............................................................................................
+Mono can accept any type
+
+............................................................................................
+Mono<T>
+Mono<HttpResponse>
+Mono<String>
+Mono<List>
+Mono<Set>
+.............................................................................................
+				Flux - Stream Producer - 0...N
+............................................................................................
+
+Basic Flux Creation:
+package com.ibs.reactive.flux;
+
+import reactor.core.publisher.Flux;
+
+public class FluxCreate {
+    public static void main(String[] args) {
+        createFlux();
+        createFluxWithoutVariable();
+    }
+    
+
+    private static void createFluxWithoutVariable() {
+        Flux.create(fluxSink -> {
+            for (int i = 0; i < 10; i++) {
+                fluxSink.next(i);
+            }
+            fluxSink.complete();
+        }).subscribe(System.out::println, System.out::println, () -> System.out.println("Completed"));
+    }
+
+    private static void createFlux() {
+        Flux<Integer> intFlux = Flux.create(fluxSink -> {
+            for (int i = 0; i < 10; i++) {
+                fluxSink.next(i);
+            }
+            fluxSink.complete();
+        });
+        intFlux.subscribe(System.out::println, System.out::println, () -> System.out.println("Completed"));
+    }
+}
+
+Flux with Error:
+................
+package com.ibs.reactive.flux;
+
+import reactor.core.publisher.Flux;
+
+public class FluxWithError {
+    public static void main(String[] args) {
+        createFluxWithError();
+    }
+
+    private static void createFluxWithError() {
+        Flux.create(fluxSink -> {
+            for (int i = 0; i < 10; i++) {
+                fluxSink.next(i);
+                if (i > 5) throw new RuntimeException("Not possible to emit");
+            }
+            fluxSink.complete();
+        }).subscribe(System.out::println, System.out::println, () -> System.out.println("Completed"));
+    }
+}
+..............................................................................................
+			   When Stream is closed?
+
+
+Stream is closed 
+
+1.when stream.complete is called.
+2.when error is thrown
+..............................................................................................
+			      Flux and data Sources
+..............................................................................................
+
+package com.ibs.reactive.flux;
+
+import reactor.core.publisher.Flux;
+
+import java.util.List;
+
+//Java 15 feature to represent model object
+//record  Employee (int id,String name) {
+//    @Override
+//    public String toString() {
+//        return "Employee{" +
+//                "id=" + id +
+//                ", name='" + name + '\'' +
+//                '}';
+//    }
+//}
+class Employee {
+    private int id;
+    private String name;
+
+    public Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
+}
+
+public class FluxAndDataSources {
+    public static void main(String[] args) {
+//        getSequence();
+//        getMoreSequence();
+        //getListSequence();
+//        getArraySequence();
+        getEmployeList();
+    }
+
+    private static void getEmployeList() {
+        List<Employee> employeeList = List.of(new Employee(1, "A1"), new Employee(1, "A2"));
+        Flux.fromIterable(employeeList).subscribe(System.out::println, System.out::println, () -> System.out.println("Completed"));
+
+    }
+
+    private static void getArraySequence() {
+        Integer[] list = {80, 78, 90, 56};
+        Flux.fromArray(list).subscribe(System.out::println, System.out::println, () -> System.out.println("Completed"));
+    }
+
+    private static void getListSequence() {
+        List<Integer> integerList = List.of(10, 78, 67, 80, 89);
+        Flux.fromIterable(integerList).subscribe(System.out::println, System.out::println, () -> System.out.println("Completed"));
+    }
+
+    //List as sequence
+    private static void getMoreSequence() {
+        Flux.range(1, 100)
+                .subscribe(System.out::println, System.out::println, () -> System.out.println("Completed"));
+    }
+
+    private static void getSequence() {
+        Flux.just(1, 2, 3, 4, 5, 6, 7, 9, 10)
+                .subscribe(System.out::println, System.out::println, () -> System.out.println("Completed"));
+    }
+}
+..............................................................................................
+				    Finit and Infinit Stream
+..............................................................................................
+Finit Stream is stream can emit 0 to N items but stream to be closed at one point of time.
+Infinit stream can emit 1 to N items indefintly until we have to force to close the stream.
+
+Finit Stream:
+ Flux.just
+ Flux.range
+ Flux.fromIterable
+
+infinit Stream:
+ Flux.interval
+
+package com.ibs.reactive.flux;
+
+import reactor.core.publisher.Flux;
+
+import java.time.Duration;
+
+public class InfiniteStream {
+    public static void main(String[] args) {
+        streamNumbers();
+        //   sleep(10000);
+    }
+
+    private static void sleep(int i) {
+        try {
+            Thread.sleep(i);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void streamNumbers() {
+        // Flux.interval(Duration.ofMillis(10)).subscribe(data -> System.out.println("Data =>" + data));
+        Flux.interval(Duration.ofMillis(1000))
+                .doOnSubscribe(subscription -> {
+                    System.out.println("Subscription starts");
+                })
+                .doOnNext(data -> {
+                    System.out.println(data);
+                })
+                .doOnError(err -> {
+                    System.out.println(err);
+                })
+                .doOnComplete(() -> {
+                    System.out.println("Stream closed");
+                }).blockLast();
+    }
+
+}
+
+Incase of stream emits data using timers, there is problem before emitting data main thread was closed,we cant see any data emission.
+
+How to stop the main thread /any thread for long time?
+ 
+instead of using subscribe method, we have to use blockLast,blockFirst,block(timer)
+
+Dont use Thread.sleep
+
+When use block method, how to listen for data,error,complete?
+ 
+ doXXX operators
+............................................................................................
+				  Flux.generate
+
+To generate sequence of values , when compare to interval and range , we can customize the sequence of values.
+ 
+package com.ibs.reactive.flux;
+
+import reactor.core.publisher.Flux;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+public class FluxGenerate {
+
+    public static void main(String[] args) {
+      //  generateInts();
+        generateAutomtic();
+    }
+
+    private static void generateAutomtic() {
+        Flux.generate(AtomicLong::new, (state, sink) -> {
+            long i = state.incrementAndGet();
+            sink.next("3 X " + i + " = " + 3 * 1);
+            if (i == 10) sink.complete();
+            return state;
+        }).subscribe(System.out::println);
+    }
+
+    private static void generateInts() {
+        Flux.generate(() -> 10, (state, sink) -> {
+            //emit values
+            sink.next("3 X" + state + "=" + 3 * state);
+            if (state == 100) sink.complete();
+            return state + 1;
+        }).subscribe(System.out::println);
+    }
+}
+..............................................................................................
+				Stream Processing
+
+Operators can be classified into 
+
+1.creation
+2.transformation
+3.filtering
+4.coimbining
+5.Error Handling - resilince
+6.Uility
+7.conditional && Boolean Operator
+8.Mathmetical operator
+9.Backpressure
+10.connectable
+
+Transformation Operators
+
+1.map
+
+package com.ibs.reactive.operators.transformation;
+
+import reactor.core.publisher.Flux;
+
+public class MapTransformation {
+
+    public static void main(String[] args) {
+        transform();
+    }
+
+    private static void transform() {
+//        Flux.range(1, 10).map(i -> {
+//            return i * 2;
+//        }).subscribe(System.out::println);
+//        Flux.range(1, 10).map(i -> i * 2).subscribe(System.out::println);
+        Flux.range(1, 10).map(MapTransformation::doubleIt).subscribe(System.out::println);
+
+    }
+
+    private static Integer doubleIt(Integer i) {
+        return i * 2;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
