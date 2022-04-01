@@ -13,11 +13,11 @@ public class MapTransformation {
 //            return i * 2;
 //        }).subscribe(System.out::println);
 //        Flux.range(1, 10).map(i -> i * 2).subscribe(System.out::println);
-        Flux.range(1, 10).map(MapTransformation::doubleIt).subscribe(System.out::println);
+        Flux.range(1, 10).map(MapTransformation::apply).subscribe(System.out::println);
 
     }
 
-    private static Integer doubleIt(Integer i) {
+    private static Integer apply(Integer i) {
         return i * 2;
     }
 }

@@ -863,7 +863,7 @@ Operators can be classified into
 3.filtering
 4.coimbining
 5.Error Handling - resilince
-6.Uility
+6.Utitlity
 7.conditional && Boolean Operator
 8.Mathmetical operator
 9.Backpressure
@@ -896,19 +896,513 @@ public class MapTransformation {
         return i * 2;
     }
 }
+.............................................................................................
+
+Marable Diagram:
+  The pictorial representation of Stream flow.
+
+Flux.just()------0--1----3----X------------------------------------------|---> Time
+                                                                  Stream closed              
+               (elements)    Error            
+		
+			   |
+			map(E->[E])
+			   |
+			   |
+
+------0--1----3----X------------------------------------------|---> Time  -new Stream
+                                                             Stream closed              
+               (elements)    Error            
+
+
+                          |
+			map(E->[E])
+			   |
+			   |
+
+------0--1----3----X------------------------------------------|---> Time  -new Stream
+                                                             Stream closed              
+               (elements)    Error            
+				|
+			        |
+                          Subscriber(via subscribe) - Terminal
+		
+
+
+The top most stream is called "Source Stream" , some times we call as "UpStream".
+
+UpStream and DownStream:
+
+UpStream means from where data is flowing , down stream is nothing from where we receive data.
+
+
+package com.ibs.reactive.streams;
+
+import reactor.core.publisher.Flux;
+
+import java.time.Duration;
+
+public class Streams {
+    public static void main(String[] args) {
+        Flux.interval(Duration.ofMillis(1000)).map(i -> {
+                    System.out.println("map-1 =>" + i);
+                    return i * 2;
+                }).map(j -> {
+                    System.out.println("map-2 =>" + j);
+                    return j * 2;
+                })
+                .doOnNext(l -> {
+                    System.out.println("Item " + l);
+                }).blockLast();
+    }
+}
+.............................................................................................
+
+map(Function<? super T,? extends V> mapper)
+Transform the items emitted by this Flux by applying a synchronous function to each item.
+
+ Here function returns value
+
+flatMap
+public final <R> Flux<R> flatMap(Function<? super T,? extends Publisher<? extends R>> mapper)
+  here functions Publisher (Mono or Flux) - inner Stream
+
+package com.ibs.reactive.streams;
+
+import reactor.core.publisher.Flux;
+
+public class FlatMapDemo {
+    public static void main(String[] args) {
+        Flux.range(1, 10).flatMap(i -> {
+            // return Flux.just("page visit" + i).map(String::toUpperCase);
+            System.out.println("I " + i);
+            System.out.println("..............");
+            return Flux.just("Hello").repeat(3);
+            //  return Flux.interval(Duration.ofMillis(10000)).map(j->i *j);
+        }).doOnNext(e -> {
+            System.out.println("E " + e);
+        }).blockLast();
+    }
+}
+..............................................................................................					 Predicate -Filtering Observables
+..............................................................................................
+
+
+package com.ibs.reactive.streams;
+
+import reactor.core.publisher.Flux;
+
+import java.util.List;
+
+public class FliteringStream {
+    public static void main(String[] args) {
+        Flux.range(1, 10).log()
+                .filter(i -> i % 2 == 0)
+                .doOnNext(item -> {
+                    System.out.println("Even Number =>" + item);
+                }).subscribe();
+
+        System.out.println("Filtered Name");
+        Flux.fromIterable(List.of("Subramanian", "Ram", "Sudha", "Suresh", "Anbu"))
+                .filter(name -> name.startsWith("A")).doOnNext(item -> {
+                    System.out.println("Name =>" + item);
+                }).subscribe();
+    }
+}
+...........................................................................................
+				  Broad Casting
+............................................................................................
+
+One Publisher , many subscriber
+
+Types of Communication
+1.unicast  
+   one to one
+2.multicast
+   one to many
+
+Unicast
+
+Flux<String> publisher = Flux.just("hello");
+
+publisher.subscribe() 
+
+
+Based on this communication style stream can be classified into two category.
+
+1.Cold Flux/Mono(Cold Stream)
+2.Hot Flux/Mono(Hot Stream)
+
+1.Cold Flux:
+.............
+
+1.Flux that doesn’t emit items until a subscriber subscribes.
+
+2.If we have more than one subscriber, then Flux will 
+emit sequence of items to all subscribers one by one.
+ eg:
+   Think of http request, each new subscriber triggers an http call, 
+
+
+3.Each subscriber get fresh copy of the data from the begining, when ever he joins
+
+4.Mostly by default  are Cold.
+
+
+*********************************************************************************************
+
+How cold stream works? How publisher can publish the same copy of the data to each subscriber?
+
+ Internally Reactor uses a concept called "copy on write"  clone alogrithm for cloning
+ "Producer" Object.
+ 
+When a new subscriber comes, reactor clone existing Producer Object, will be attached to new Subscriber  and so on for each subscription.
+ 
+*********************************************************************************************
+package com.ibs.reactive.broadcasting;
+
+import reactor.core.publisher.Flux;
+
+public class ColdFlux {
+    public static void main(String[] args) {
+        //producer
+        Flux<Integer> producer = Flux.create(fluxSink -> {
+            for (int i = 1; i <= 10; i++) {
+                fluxSink.next(i);
+            }
+            fluxSink.complete();
+        });
+        //subscriber 1
+        producer.doOnSubscribe(subscription -> {
+            System.out.println("Subramanian has subscribed");
+        }).doOnNext(data -> {
+            System.out.println("Subramanian's " + data);
+        }).doOnComplete(() -> {
+            System.out.println("Subramanian done!!");
+        }).subscribe();
+        //susbcriber 2
+        producer.doOnSubscribe(subscription -> {
+            System.out.println("James has subscribed");
+        }).doOnNext(data -> {
+            System.out.println("James's " + data);
+        }).doOnComplete(() -> {
+            System.out.println("james done!!");
+        }).subscribe();
+        //simulate delay of joining
+        //
+        delay("waiting to join", 5000);
+        producer.doOnSubscribe(subscription -> {
+            System.out.println("Karthik has subscribed");
+        }).doOnNext(data -> {
+            System.out.println("Karthik's " + data);
+        }).doOnComplete(() -> {
+            System.out.println("Karthik done!!");
+        }).subscribe();
+
+    }
+    public static void delay(String message, long timer) {
+        try {
+            System.out.println(message);
+            Thread.sleep(timer);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+.............................................................................................
+
+package com.ibs.reactive.broadcasting;
+
+import reactor.core.publisher.DirectProcessor;
+import reactor.core.publisher.Flux;
+
+public class HotStreamUsingDirectProcessor {
+    public static void main(String[] args) {
+        //Hot Stream
+        DirectProcessor hotSource = DirectProcessor.create();
+        //Flux create
+        Flux<String> hotFlux = hotSource;
+
+        delay("delay",5000);
+
+        //First subscriber
+        hotFlux.doOnSubscribe(subscription -> {
+            System.out.println("Subramanian Subscribed");
+        }).doOnNext(data->{
+            System.out.println("Subramaian's data " + data);
+        }).doOnComplete(() -> {
+            System.out.println("Subramanian done!!");
+        }).log().subscribe();
+
+
+        delay("delay",5000);
+
+        //publish data
+        hotSource.onNext("Hello");
+        hotSource.onNext("Hai");
+
+        //First subscriber
+        hotFlux.doOnSubscribe(subscription -> {
+            System.out.println("Karthik Subscribed");
+        }).doOnNext(data->{
+            System.out.println("Kathik data " + data);
+        }).doOnComplete(() -> {
+            System.out.println("Kathik done !!");
+        }).log().subscribe();
+        delay("delay",5000);
+
+        hotSource.onNext("welcome");
+        hotSource.onNext("how are you?");
+
+    }
+    public static void delay(String message, long timer) {
+        try {
+            System.out.println(message);
+            Thread.sleep(timer);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+...............................................................................................
+package com.ibs.reactive.broadcasting;
+
+import reactor.core.publisher.ConnectableFlux;
+import reactor.core.publisher.Flux;
+
+public class ConnectableFluxHotStream {
+
+    public static void delay(String message, long timer) {
+        try {
+            System.out.println(message);
+            Thread.sleep(timer);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void main(String[] args) {
+        //Create Cold Flux
+        Flux<Integer> source = Flux.range(1, 5).doOnSubscribe(s -> {
+            System.out.println("Subscribed to Source");
+        });
+        //ConnectableFlux : bridge between subscribers
+        ConnectableFlux<Integer> bridge = source.publish();
+        //subscribe
+        bridge.subscribe(data -> {
+            System.out.println("Subscriber 1 " + data);
+        });
+
+         delay("joining late",10000);
+        bridge.subscribe(data -> {
+            System.out.println("Subscriber 2 " + data);
+        });
+        System.out.println("Subscription done");
+        delay("waiting to connect...",5000);
+        System.out.println("Going to Connect");
+
+        //just connect with upstream source for data emmions
+        bridge.connect(); // autoConnect,refCount
+
+
+    }
+
+}
+...........................................................................................
+				 	Handling Errors:
+..................
+
+In reactive stream specs , errors are terminal events.
+As soon as error occurs, it stop sequences and get propagated down the chain of operators
+to the last step. the subscriber you defined and its onError method.
+
+How to handle errors in more effective way:
+
+ Reactor provides Error handling operators.
+
+ 1.Catch and return a static default value.
+ 2.Catch and execute an alternative path with a fallback method.
+ 3.Catch and dynamically compute a fallback value
+ 4.Catch and wrap to CustomException and ret-throw
+ 5.Catch and log error-specific message, and rethrow.
+ 6.you can clean resources using finally block.
+
+Error handling in normal programm
+
+package com.cts.reactor.errhandling;
+
+import reactor.core.publisher.Flux;
+
+public class SimpleErrorHandling {
+    private static String doSomething(int i) {
+        // System.out.println(i);
+        if (i == 5) {
+            throw new RuntimeException("something went wrong!!!");
+        }
+        return Integer.toString(i);
+    }
+
+    public static void main(String[] args) {
+        //legacy code
+        try {
+            for (int i = 1; i < 10; i++) {
+                String v1 = doSomething(i);
+                System.out.println(v1);
+            }
+
+        } catch (Throwable a) {
+            System.out.println("CAUGHT" + a);
+        }
+        //Reactive way
+        Flux<String> f = Flux.range(1, 10)
+                .map(v -> doSomething(v));
+        f.subscribe(v -> System.out.println(v), err -> System.out.println("CAUGHT" + err.getMessage()));
+
+
+    }
+
+
+}
+
+
+Use case 2 : how to return static fallback value:
+.................................................
+
+  try {
+            for (int i = 1; i < 10; i++) {
+                String v1 = doSomething(i);
+                System.out.println(v1);
+            }
+
+        } catch (Throwable a) {
+            return "RECOVERED";
+        }
+
+package com.cts.reactor.errhandling;
+
+import reactor.core.publisher.Flux;
+package com.cts.reactor.errhandling;
+
+import reactor.core.publisher.Flux;
+
+public class SimpleErrorHandling {
+    private static String doSomething(int i) {
+        // System.out.println(i);
+        if (i == 5) {
+            throw new RuntimeException("sorry");
+        }
+        return Integer.toString(i);
+    }
+
+    private static String doSomethingboom(int i) {
+        // System.out.println(i);
+        if (i == 5) {
+            throw new RuntimeException("boom10");
+        }
+        return Integer.toString(i);
+    }
+
+    public static void main(String[] args) {
+        //legacy code
+        try {
+            for (int i = 1; i < 10; i++) {
+                String v1 = doSomething(i);
+                System.out.println(v1);
+            }
+
+        } catch (Throwable a) {
+            System.out.println("CAUGHT" + a);
+        }
+        //Reactive way
+        Flux<String> f = Flux.range(1, 10)
+                .map(v -> doSomething(v));
+        f.subscribe(v -> System.out.println(v), err -> System.out.println("CAUGHT" + err.getMessage()));
+
+        //STATIC FALLBACK VALUE
+        /**
+         *
+         try {
+         for (int i = 1; i < 10; i++) {
+         String v1 = doSomething(i);
+         System.out.println(v1);
+         }
+
+         } catch (Throwable a) {
+         return "RECOVERED";
+         }
+         */
+        //return static fallback error message
+        Flux.range(1, 10)
+                .map(v -> doSomething(v))
+                .onErrorReturn("RECOVERED")
+                .subscribe(v -> System.out.println(v), err -> System.out.println(err));
+
+        /**
+         * Fallback method
+         *   try {
+         *          for (int i = 1; i < 10; i++) {
+         *          String v1 = doSomething(i);
+         *          System.out.println(v1);
+         *          }
+         *
+         *          } catch (Throwable a) {
+         *             result = getFromCache("key1");
+         *          }
+         */
+        Flux.range(1, 10)
+                .map(v -> doSomething(v))
+                .onErrorReturn(getFromCache())
+                .subscribe(v -> System.out.println(v), err -> System.out.println(err));
+
+        //Return something for particular method
+        Flux.range(1, 10)
+                .map(v -> doSomethingboom(v))
+                .onErrorReturn(e -> e.getMessage().equals("boom10"), "recovered10")
+                .subscribe(v -> System.out.println(v), err -> System.out.println(err));
 
 
 
+    }
+
+    private static String getFromCache() {
+        return "Recovered from Fallback method :Result from cache";
+    }
 
 
+}
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+			   Multi threading - Concurrency and Reactive
+.............................................................................................
 
+This simple stream pipe line
 
+on which thread this pipline operations are executed. 
+in general pipeline operators are executed on the thread where it was initiated.
 
+main
 
+stream.map.filter.flatMap.zip 
 
+package com.ibs.reactive.threading;
 
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
+public class Concurrency {
+    public static void main(String[] args) {
+        Flux.range(1,5).map(i->{
+            System.out.println("map 1 => " + Thread.currentThread().getName());
+            return i;
+        }).subscribeOn(Schedulers.parallel())
+                .map(i->{
+            System.out.println("map 2 =>" + Thread.currentThread().getName());
+            return i;
+        }).publishOn(Schedulers.boundedElastic()).filter(j->{
+            System.out.println("filter =>" + Thread.currentThread().getName());
+            return j %2 ==0;
+        }).blockLast();
 
+    }
+}
 
 
 
